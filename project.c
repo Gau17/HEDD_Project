@@ -165,7 +165,7 @@ static ssize_t store_led2(struct kobject *kobj, struct kobj_attribute *attr, con
 
 static ssize_t show_led3(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
 {
-	return sprintf(buf, "led3=%d", led3Intensity);
+	return sprintf(buf, "Current intensity of Led3 = %d", led3Intensity);
 }
 
 static ssize_t store_led3(struct kobject *kobj, struct kobj_attribute *attr, const char *buff, size_t len)
@@ -197,7 +197,7 @@ static int device_open(struct inode *inode, struct file *file)
     if (atomic_cmpxchg(&already_open, CDEV_NOT_USED, CDEV_EXCLUSIVE_OPEN)) 
         return -EBUSY; 
 
-    pr_info("LED Controller driver is opened\n"); 
+    pr_info("Project driver is opened\n"); 
     try_module_get(THIS_MODULE); 
  
     return SUCCESS; 
@@ -208,25 +208,121 @@ static int device_release(struct inode *inode, struct file *file)
     atomic_set(&already_open, CDEV_NOT_USED); 
  
     module_put(THIS_MODULE); 
-    pr_info("LED Controller Module is Closed\n");
+    pr_info("Project driver is closed\n");
 
     return SUCCESS; 
 }
 
-static ssize_t device_read(struct file *filp,
-                           char __user *buffer,
-                           size_t length,
-                           loff_t *offset) 
-{ 
-	pr_info("Reading from LED Controller module.\n");
-	return 0;
+static ssize_t device_read(struct file *filp, char __user *buffer, size_t length, loff_t *offset) 
+{
+	pr_info("Reading through project driver.\n");
+
+	if (*offset == 0)
+	{
+		sprintf(buffer, "Current intensity of Led1 = %d, Current intensity of Led2 = %d, Current intensity of Led3 = %d", led1Intensity, led2Intensity, led3Intensity);
+		*offset = strlen(buffer);
+	}
+	else
+	{
+		*offset = 0;
+	}
+
+	return *offset;
 }
 
 static ssize_t device_write(struct file *filp, const char __user *buff, 
-                            size_t len, loff_t *off) 
+    size_t len, loff_t *off) 
 { 
-    pr_info("Writing through LED Controller module.\n"); 
-    return -EINVAL; 
+    pr_info("Writing through project driver.\n");
+
+    //Null terminate the string
+    char kernel_buffer[BUF_LEN+1] = {"\0"};
+
+    if(copy_from_user(kernel_buffer, buff, len-1)){return -EFAULT;}
+    
+    // Setting intensity of LED 1
+    if(strcmp(kernel_buffer, "Led1_intensity=0"))
+    {
+        sscanf("0", "%d", &led1Intensity);
+    } 
+
+    else if(strcmp(kernel_buffer, "Led1_intensity=25"))
+    {
+        sscanf("25", "%d", &led1Intensity);
+    } 
+    else if(strcmp(kernel_buffer, "Led1_intensity=50"))
+    {
+        sscanf("50", "%d", &led1Intensity);
+    }
+
+    else if(strcmp(kernel_buffer, "Led1_intensity=75"))
+    {
+        sscanf("75", "%d", &led1Intensity);
+    }
+
+    else if(strcmp(kernel_buffer, "Led1_intensity=100"))
+    {
+        sscanf("100", "%d", &led1Intensity);
+    }
+
+    // Setting intensity of LED 2
+    else if(strcmp(kernel_buffer, "Led2_intensity=0"))
+    {
+        sscanf("0", "%d", &led2Intensity);
+    }
+
+    else if(strcmp(kernel_buffer, "Led2_intensity=25"))
+    {
+        sscanf("25", "%d", &led2Intensity);
+    }
+
+    else if(strcmp(kernel_buffer, "Led2_intensity=50"))
+    {
+        sscanf("50", "%d", &led2Intensity);
+    }
+
+    else if(strcmp(kernel_buffer, "Led2_intensity=75"))
+    {
+        sscanf("75", "%d", &led2Intensity);
+    }
+
+    else if(strcmp(kernel_buffer, "Led2_intensity=100"))
+    {
+        sscanf("100", "%d", &led2Intensity);
+    }
+
+    // Setting intensity of LED 3
+    else if(strcmp(kernel_buffer, "Led3_intensity=0"))
+    {
+        sscanf("0", "%d", &led3Intensity);
+    }
+
+    else if(strcmp(kernel_buffer, "Led3_intensity=25"))
+    {
+        sscanf("25", "%d", &led3Intensity);
+    }
+
+    else if(strcmp(kernel_buffer, "Led3_intensity=50"))
+    {
+        sscanf("50", "%d", &led3Intensity);
+    }
+
+    else if(strcmp(kernel_buffer, "Led3_intensity=75"))
+    {
+        sscanf("75", "%d", &led3Intensity);
+    }
+
+    else if(strcmp(kernel_buffer, "Led3_intensity=100"))
+    {
+        sscanf("100", "%d", &led3Intensity);
+    }
+
+    else if(strcmp(kernel_buffer, "clicks=0"))
+    {
+        sscanf("0", "%d", &buttonPressCount);
+    }
+
+    return len; 
 } 
 
 static int __init led_controller_init(void) 
