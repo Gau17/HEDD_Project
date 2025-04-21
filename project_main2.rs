@@ -14,7 +14,9 @@ fn main()
 		file.read_to_string(&mut file_status).expect("");
 		println!("{}", file_status);
 
-		match clicks_count.trim().parse().unwrap(){
+        	let clicks_count = file_status.split("Clicks count =").nth(1).and_then(|s| s.trim().parse::<i32>().ok()).unwrap_or(0);
+
+		match clicks_count{
 			0 => {file.write_all(b"Led1_intensity=0"); file.write_all(b"Led2_intensity=0"); file.write_all(b"Led3_intensity=0");},
 			1..=5 => {file.write_all(b"Led1_intensity=25"); file.write_all(b"Led2_intensity=0"); file.write_all(b"Led3_intensity=0");},
 			6..=10 => {file.write_all(b"Led1_intensity=50"); file.write_all(b"Led2_intensity=0"); file.write_all(b"Led3_intensity=0");},
@@ -33,8 +35,8 @@ fn main()
 
 			_ => {file.write_all(b"Led1_intensity=100"); file.write_all(b"Led2_intensity=100"); file.write_all(b"Led3_intensity=100");}
 		}
-        //Resetting count
-        file.write_all(b"clicks=0");
+        	//Resetting count
+        	file.write_all(b"clicks=0");
 		
 		file_status.clear();
 
